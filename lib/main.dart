@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
-import 'telas/Tela_admin.dart'; // Importando a tela corretamente após a mudança de pasta
+import 'Telas/Tela_Login.dart';
+import 'Telas/Tela_Admin.dart'; // Importando a tela administrativa
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Sistema de Alertas',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: const TelaAdmin(), // Tela inicial apontando para TelaAdmin
+      title: 'Flutter App',
+      initialRoute: '/',
+      routes: {
+        '/': (context) => TelaLogin(),
+        // Agora a TelaAdmin está corretamente definida
+        '/admin': (context) => TelaAdmin(),
+      },
     );
   }
 }
