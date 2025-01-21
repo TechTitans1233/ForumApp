@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../Modelo/Modelo_Admin.dart';
+import '../Modelos/Modelo_Admin.dart';
 
 class TelaAdmin extends StatelessWidget {
   @override
