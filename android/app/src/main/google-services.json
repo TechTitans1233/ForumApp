@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "112085181246",
+    "project_id": "projeto-pi2",
+    "storage_bucket": "projeto-pi2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:112085181246:android:7802d0414414473bf0826f",
+        "android_client_info": {
+          "package_name": "com.name.forum"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAhoVVkKQHKx9e_67DIDGLgxyBpFsHDJ8o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

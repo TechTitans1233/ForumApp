@@ -1,144 +1,372 @@
 import 'package:flutter/material.dart';
-import '../Modelos/Modelo_Login.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'Tela_admin.dart';
 
 class TelaLogin extends StatefulWidget {
+  const TelaLogin({super.key});
+
   @override
-  _TelaLoginState createState() => _TelaLoginState();
+  State<TelaLogin> createState() => _TelaLoginState();
 }
 
 class _TelaLoginState extends State<TelaLogin> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final _formKey = GlobalKey<FormState>();
-  String email = '';
-  String password = '';
-  String adminPassword = '';
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _adminPasswordController = TextEditingController();
+
+  bool _isLoading = false;
+  bool _showAdminLogin = false;
+  bool _showRegister = false;
+  String _errorMessage = '';
+
+  Future<void> _handleUserLogin() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final userCredential = await _auth.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      final userDoc = await _firestore
+          .collection('users')
+          .doc(userCredential.user!.uid)
+          .get();
+
+      if (userDoc.exists && userDoc.data()!['isAdmin'] == true) {
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (_) => const TelaAdmin()));
+      } else {
+        Navigator.pushReplacementNamed(context, '/forum');
+      }
+    } on FirebaseAuthException catch (e) {
+      setState(() => _errorMessage = _getErrorMessage(e.code));
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _handleAdminLogin() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final query = await _firestore
+          .collection('admin_settings')
+          .where('secret_key', isEqualTo: _adminPasswordController.text.trim())
+          .limit(1)
+          .get();
+
+      if (query.docs.isEmpty) {
+        throw FirebaseAuthException(code: 'invalid-admin-key');
+      }
+
+      final userCredential = await _auth.signInAnonymously();
+      await _firestore.collection('users').doc(userCredential.user!.uid).set({
+        'isAdmin': true,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (_) => const TelaAdmin()));
+    } on FirebaseAuthException catch (e) {
+      setState(() => _errorMessage = _getErrorMessage(e.code));
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _handleRegistration() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isLoading = true);
+
+    try {
+      final userCredential = await _auth.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      await _firestore.collection('users').doc(userCredential.user!.uid).set({
+        'name': _nameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'isAdmin': false,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      Navigator.pushReplacementNamed(context, '/forum');
+    } on FirebaseAuthException catch (e) {
+      setState(() => _errorMessage = _getErrorMessage(e.code));
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  String _getErrorMessage(String code) {
+    switch (code) {
+      case 'invalid-admin-key':
+        return 'Chave administrativa inválida';
+      case 'user-not-found':
+      case 'wrong-password':
+        return 'Credenciais inválidas';
+      case 'email-already-in-use':
+        return 'Email já cadastrado';
+      default:
+        return 'Erro na autenticação';
+    }
+  }
+
+  Widget _buildAuthForm() {
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: [
+          if (_showAdminLogin)
+            _buildAdminForm()
+          else if (_showRegister)
+            _buildRegisterForm()
+          else
+            _buildLoginForm(),
+          const SizedBox(height: 20),
+          if (_errorMessage.isNotEmpty)
+            Text(
+              _errorMessage,
+              style: const TextStyle(color: Colors.red, fontSize: 14),
+            ),
+          const SizedBox(height: 20),
+          _buildToggleButtons(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoginForm() {
+    return Column(
+      children: [
+        TextFormField(
+          controller: _emailController,
+          decoration: const InputDecoration(
+            labelText: 'Email',
+            prefixIcon: Icon(Icons.email),
+          ),
+          keyboardType: TextInputType.emailAddress,
+          validator: (value) => value!.isEmpty ? 'Digite seu email' : null,
+        ),
+        const SizedBox(height: 15),
+        TextFormField(
+          controller: _passwordController,
+          decoration: const InputDecoration(
+            labelText: 'Senha',
+            prefixIcon: Icon(Icons.lock),
+          ),
+          obscureText: true,
+          validator: (value) => value!.isEmpty ? 'Digite sua senha' : null,
+        ),
+        const SizedBox(height: 25),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _isLoading ? null : _handleUserLogin,
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              backgroundColor: const Color(0xFF007BFF),
+            ),
+            child: _isLoading
+                ? const CircularProgressIndicator(color: Colors.white)
+                : const Text('Entrar', style: TextStyle(fontSize: 16)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAdminForm() {
+    return Column(
+      children: [
+        TextFormField(
+          controller: _adminPasswordController,
+          decoration: const InputDecoration(
+            labelText: 'Chave Administrativa',
+            prefixIcon: Icon(Icons.security),
+          ),
+          obscureText: true,
+          validator: (value) => value!.isEmpty ? 'Digite a chave' : null,
+        ),
+        const SizedBox(height: 25),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _isLoading ? null : _handleAdminLogin,
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              backgroundColor: Colors.red,
+            ),
+            child: _isLoading
+                ? const CircularProgressIndicator(color: Colors.white)
+                : const Text('Acessar Painel Admin',
+                    style: TextStyle(fontSize: 16)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRegisterForm() {
+    return Column(
+      children: [
+        TextFormField(
+          controller: _nameController,
+          decoration: const InputDecoration(
+            labelText: 'Nome Completo',
+            prefixIcon: Icon(Icons.person),
+          ),
+          validator: (value) => value!.isEmpty ? 'Digite seu nome' : null,
+        ),
+        const SizedBox(height: 15),
+        TextFormField(
+          controller: _emailController,
+          decoration: const InputDecoration(
+            labelText: 'Email',
+            prefixIcon: Icon(Icons.email),
+          ),
+          keyboardType: TextInputType.emailAddress,
+          validator: (value) => value!.isEmpty ? 'Digite seu email' : null,
+        ),
+        const SizedBox(height: 15),
+        TextFormField(
+          controller: _passwordController,
+          decoration: const InputDecoration(
+            labelText: 'Senha',
+            prefixIcon: Icon(Icons.lock),
+          ),
+          obscureText: true,
+          validator: (value) => value!.isEmpty ? 'Digite sua senha' : null,
+        ),
+        const SizedBox(height: 25),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            onPressed: _isLoading ? null : _handleRegistration,
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 15),
+              backgroundColor: const Color(0xFF00B312),
+            ),
+            child: _isLoading
+                ? const CircularProgressIndicator(color: Colors.white)
+                : const Text('Cadastrar', style: TextStyle(fontSize: 16)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildToggleButtons() {
+    return Column(
+      children: [
+        if (!_showAdminLogin && !_showRegister)
+          TextButton(
+            onPressed: () => setState(() => _showAdminLogin = true),
+            child: const Text(
+              'Login Administrativo',
+              style: TextStyle(color: Color(0xFF007BFF)),
+            ),
+          ),
+        if (!_showAdminLogin)
+          TextButton(
+            onPressed: () => setState(() {
+              _showRegister = !_showRegister;
+              _errorMessage = '';
+            }),
+            child: Text(
+              _showRegister ? 'Já tem uma conta? Entrar' : 'Criar nova conta',
+              style: const TextStyle(color: Color(0xFF007BFF)),
+            ),
+          ),
+        if (_showAdminLogin)
+          TextButton(
+            onPressed: () => setState(() => _showAdminLogin = false),
+            child: const Text(
+              'Voltar ao login comum',
+              style: TextStyle(color: Colors.red),
+            ),
+          ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Tela de Login'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ListView(
-          children: [
-            // Login de Usuário
-            Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Login de Usuário',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 200,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF007BFF), Color(0xFF0056B3)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
                   ),
-                  TextFormField(
-                    decoration: InputDecoration(labelText: 'Email'),
-                    onChanged: (value) {
-                      setState(() {
-                        email = value;
-                      });
-                    },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Digite seu email';
-                      }
-                      return null;
-                    },
-                  ),
-                  TextFormField(
-                    obscureText: true,
-                    decoration: InputDecoration(labelText: 'Senha'),
-                    onChanged: (value) {
-                      setState(() {
-                        password = value;
-                      });
-                    },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Digite sua senha';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: 20),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF007bff),
-                      foregroundColor: Colors
-                          .white, // Corrigido de onPrimary para foregroundColor
-                      padding: EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                    onPressed: () {
-                      if (_formKey.currentState?.validate() ?? false) {
-                        // Validar email e senha
-                        if (email == 'user@example.com' &&
-                            password == 'userpassword') {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text('Login realizado com sucesso')));
-                          Navigator.pushReplacementNamed(context, '/admin');
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                              content: Text('Email ou senha incorretos')));
-                        }
-                      }
-                    },
-                    child: Text('Entrar'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      // Exemplo de navegação para tela de cadastro
-                      Navigator.pushNamed(context, '/cadastro');
-                    },
-                    child: Text('Não tem conta? Cadastre-se'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      // Exemplo de login administrativo
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: Text('Login Administrativo'),
-                          content: TextFormField(
-                            obscureText: true,
-                            decoration: InputDecoration(
-                                labelText: 'Senha Administrativa'),
-                            onChanged: (value) {
-                              setState(() {
-                                adminPassword = value;
-                              });
-                            },
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                if (adminPassword == 'admin123') {
-                                  Navigator.pushReplacementNamed(
-                                      context, '/admin');
-                                } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                          content: Text(
-                                              'Senha administrativa incorreta')));
-                                }
-                              },
-                              child: Text('Entrar'),
-                            ),
-                          ],
+                ),
+              ),
+              title: const Text('Login', style: TextStyle(color: Colors.white)),
+              centerTitle: true,
+            ),
+            pinned: true,
+          ),
+          SliverPadding(
+            padding: const EdgeInsets.all(25),
+            sliver: SliverToBoxAdapter(
+              child: Card(
+                elevation: 8,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(25),
+                  child: Column(
+                    children: [
+                      Text(
+                        _showAdminLogin
+                            ? 'Acesso Administrativo'
+                            : _showRegister
+                                ? 'Criar Conta'
+                                : 'Bem-vindo',
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF333333),
                         ),
-                      );
-                    },
-                    child: Text('Login Administrativo'),
+                      ),
+                      const SizedBox(height: 30),
+                      _buildAuthForm(),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _nameController.dispose();
+    _adminPasswordController.dispose();
+    super.dispose();
   }
 }

@@ -1,21 +1,32 @@
 import 'package:flutter/material.dart';
-import 'Telas/Tela_Login.dart';
-import 'Telas/Tela_Admin.dart'; // Importando a tela administrativa
+import 'package:firebase_core/firebase_core.dart';
+import 'Telas/Tela_login.dart';
+import 'Telas/Tela_admin.dart';
 
-void main() {
-  runApp(MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter App',
-      initialRoute: '/',
+      title: 'Disaster Warning System',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF007BFF),
+          secondary: const Color(0xFF0056B3),
+        ),
+        useMaterial3: true,
+      ),
+      home: const TelaLogin(),
       routes: {
-        '/': (context) => TelaLogin(),
-        // Agora a TelaAdmin está corretamente definida
-        '/admin': (context) => TelaAdmin(),
+        '/admin': (context) => const TelaAdmin(),
       },
     );
   }

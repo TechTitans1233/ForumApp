@@ -1,109 +1,236 @@
 import 'package:flutter/material.dart';
-import '../Modelos/Modelo_Admin.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class TelaAdmin extends StatelessWidget {
+class TelaAdmin extends StatefulWidget {
+  const TelaAdmin({super.key});
+
+  @override
+  State<TelaAdmin> createState() => _TelaAdminState();
+}
+
+class _TelaAdminState extends State<TelaAdmin> {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  String? _selectedUserId;
+  String? _selectedPostId;
+  final Map<String, String> _searchQueries = {'users': '', 'posts': ''};
+
+  Future<void> _deleteDocument(String collection, String id) async {
+    await _firestore.collection(collection).doc(id).delete();
+  }
+
+  void _showEditDialog(
+      String collection, String id, Map<String, dynamic> data) {
+    final controllers = data.map((key, value) =>
+        MapEntry(key, TextEditingController(text: value.toString())));
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Editar ${collection == 'users' ? 'Usuário' : 'Post'}'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: controllers.entries
+              .map((e) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: TextField(
+                      controller: e.value,
+                      decoration:
+                          InputDecoration(labelText: _capitalize(e.key)),
+                    ),
+                  ))
+              .toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final newData = collection == 'users'
+                  ? {
+                      'name': controllers['name']!.text,
+                      'email': controllers['email']!.text
+                    }
+                  : {
+                      'titulo': controllers['titulo']!.text,
+                      'conteudo': controllers['conteudo']!.text
+                    };
+
+              await _firestore.collection(collection).doc(id).update(newData);
+              if (mounted) Navigator.pop(context);
+            },
+            child: const Text('Salvar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _capitalize(String s) => s[0].toUpperCase() + s.substring(1);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Administração"),
+        title: const Text('Painel Administrativo'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              FirebaseAuth.instance.signOut();
+              Navigator.pushReplacementNamed(context, '/');
+            },
+          )
+        ],
       ),
-      body: SingleChildScrollView(
+      body: CustomScrollView(
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.all(20),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                _buildManagementSection(
+                  title: 'Gerenciar Usuários',
+                  collection: 'users',
+                  selectedId: _selectedUserId,
+                  columns: const ['ID', 'Nome', 'Email'],
+                ),
+                const SizedBox(height: 20),
+                _buildManagementSection(
+                  title: 'Gerenciar Publicações',
+                  collection: 'posts',
+                  selectedId: _selectedPostId,
+                  columns: const ['ID', 'Título', 'Conteúdo'],
+                ),
+              ]),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildManagementSection({
+    required String title,
+    required String collection,
+    required String? selectedId,
+    required List<String> columns,
+  }) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            _buildUserManagementSection(context),
-            _buildPostManagementSection(context),
+            Text(title, style: Theme.of(context).textTheme.headlineSmall),
+            const SizedBox(height: 16),
+            TextField(
+              decoration: InputDecoration(
+                hintText: 'Pesquisar $title...',
+                prefixIcon: const Icon(Icons.search),
+                filled: true,
+                fillColor: Theme.of(context).inputDecorationTheme.fillColor,
+              ),
+              onChanged: (value) => setState(
+                  () => _searchQueries[collection] = value.toLowerCase()),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 300,
+              child: StreamBuilder<QuerySnapshot>(
+                stream: _firestore.collection(collection).snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  final filteredDocs = snapshot.data!.docs.where((doc) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    return data.values.any((value) => value
+                        .toString()
+                        .toLowerCase()
+                        .contains(_searchQueries[collection]!));
+                  }).toList();
+
+                  return _buildDataTable(
+                    filteredDocs,
+                    collection,
+                    selectedId,
+                    columns: columns,
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                ElevatedButton(
+                  onPressed: selectedId == null
+                      ? null
+                      : () async {
+                          final doc = await _firestore
+                              .collection(collection)
+                              .doc(selectedId)
+                              .get();
+                          if (doc.exists) {
+                            _showEditDialog(
+                                collection, selectedId, doc.data()!);
+                          }
+                        },
+                  child: const Text('Editar Selecionado'),
+                ),
+                const SizedBox(width: 10),
+                ElevatedButton(
+                  onPressed: selectedId == null
+                      ? null
+                      : () => _deleteDocument(collection, selectedId),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                  ),
+                  child: const Text('Excluir Selecionado'),
+                ),
+              ],
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildUserManagementSection(BuildContext context) {
-    return SectionWidget(
-      title: 'Gerenciar Usuários',
-      tableHeaders: ['ID', 'Nome', 'Email'],
-      fetchData: fetchUsers, // Função para buscar dados de usuários
-    );
-  }
-
-  Widget _buildPostManagementSection(BuildContext context) {
-    return SectionWidget(
-      title: 'Gerenciar Publicações',
-      tableHeaders: ['ID', 'Título', 'Conteúdo'],
-      fetchData: fetchPosts, // Função para buscar dados de publicações
-    );
-  }
-
-  Future<List<Usuario>> fetchUsers() async {
-    // Simulação de dados, substitua por chamada ao Firebase ou API
-    return [
-      Usuario(id: '1', nome: 'João', email: 'joao@exemplo.com'),
-      Usuario(id: '2', nome: 'Maria', email: 'maria@exemplo.com'),
-    ];
-  }
-
-  Future<List<Publicacao>> fetchPosts() async {
-    // Simulação de dados, substitua por chamada ao Firebase ou API
-    return [
-      Publicacao(
-          id: '1',
-          titulo: 'Publicação 1',
-          conteudo: 'Conteúdo da publicação 1'),
-      Publicacao(
-          id: '2',
-          titulo: 'Publicação 2',
-          conteudo: 'Conteúdo da publicação 2'),
-    ];
-  }
-}
-
-// Widget para criar a estrutura da seção com tabelas
-class SectionWidget extends StatelessWidget {
-  final String title;
-  final List<String> tableHeaders;
-  final Future<List<dynamic>> Function() fetchData;
-
-  SectionWidget({
-    required this.title,
-    required this.tableHeaders,
-    required this.fetchData,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(title,
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-        FutureBuilder<List<dynamic>>(
-          future: fetchData(),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return CircularProgressIndicator();
-            }
-
-            if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Text("Nenhum dado encontrado.");
-            }
-
-            final data = snapshot.data!;
-            return DataTable(
-              columns: tableHeaders
-                  .map((header) => DataColumn(label: Text(header)))
-                  .toList(),
-              rows: data.map((item) {
-                return DataRow(cells: [
-                  DataCell(Text(item.id)),
-                  // Verifique se o item é do tipo Usuario ou Publicacao
-                  DataCell(Text(item is Usuario ? item.nome : item.titulo)),
-                  DataCell(Text(item is Usuario ? item.email : item.conteudo)),
-                ]);
-              }).toList(),
-            );
-          },
-        ),
-      ],
+  Widget _buildDataTable(
+      List<QueryDocumentSnapshot> docs, String collection, String? selectedId,
+      {required List<String> columns}) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.vertical,
+      child: DataTable(
+        headingRowColor:
+            WidgetStateColor.resolveWith((states) => const Color(0xFFE0F7FA)),
+        columns: columns.map((col) => DataColumn(label: Text(col))).toList(),
+        rows: docs.map((doc) {
+          final data = doc.data() as Map<String, dynamic>;
+          return DataRow(
+            selected: doc.id == selectedId,
+            onSelectChanged: (_) => setState(() {
+              if (collection == 'users') {
+                _selectedUserId = doc.id;
+                _selectedPostId = null;
+              } else {
+                _selectedPostId = doc.id;
+                _selectedUserId = null;
+              }
+            }),
+            cells: columns.map((col) {
+              final value = col == 'ID' ? doc.id : data[col.toLowerCase()];
+              return DataCell(Text(value?.toString() ?? ''));
+            }).toList(),
+          );
+        }).toList(),
+      ),
     );
   }
 }
