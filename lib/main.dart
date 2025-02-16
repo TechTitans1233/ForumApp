@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'Telas/Tela_login.dart';
 import 'Telas/Tela_admin.dart';
-
+import 'Telas/Tela_publicacoes.dart'; 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -24,9 +24,11 @@ class MyApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const TelaLogin(),
+      initialRoute: '/',
       routes: {
-        '/admin': (context) => const TelaAdmin(),
+        '/': (context) => const Tela_Login(),
+        '/forum': (context) => const Tela_Publicacoes(),
+        '/admin': (context) => const Tela_admin(),
       },
     );
   }
