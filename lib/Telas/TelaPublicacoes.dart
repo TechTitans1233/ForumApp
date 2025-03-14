@@ -1,4 +1,3 @@
-// TelaPublicacoes.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -48,7 +47,17 @@ class _TelaPublicacoesState extends State<TelaPublicacoes> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Minhas Publicações')),
+      appBar: AppBar(
+        title: const Text('Minhas Publicações'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.account_circle),
+            onPressed: () {
+              Navigator.pushNamed(context, '/profile'); // Navega para a tela de perfil
+            },
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Padding(
