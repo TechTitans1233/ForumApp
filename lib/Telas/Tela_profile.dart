@@ -1,27 +1,7 @@
 import 'package:flutter/material.dart';
-import 'Telas/Tela_Login.dart';
-import 'Telas/Tela_admin.dart'; // Importando a tela administrativa
+import 'Telas/Tela_Login.dart'; 
+import 'Telas/Tela_admin.dart'; 
 
-
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primaryColor: Color(0xFF007bff),
-        textTheme: TextTheme(
-          bodyLarge: TextStyle(color: Colors.black),
-        ),
-      ),
-      home: UserProfile(),  // Página inicial agora é o perfil do usuário
-    );
-  }
-}
 
 class UserProfile extends StatefulWidget {
   @override
@@ -38,7 +18,7 @@ class _UserProfileState extends State<UserProfile> {
     "Como melhorar o desempenho em apps móveis."
   ];
   List<String> _friends = ["Maria Oliveira", "Carlos Mendes", "Fernanda Souza"];
-  String _imageUrl = "https://www.w3schools.com/w3images/avatar2.png"; // Imagem fictícia
+  String _imageUrl = "https://www.w3schools.com/w3images/avatar2.png";
 
   // Função para editar o perfil
   void _editProfile() {
@@ -111,16 +91,14 @@ class _UserProfileState extends State<UserProfile> {
             TextButton(
               onPressed: () {
                 // Redireciona para a tela de login após confirmar o logout
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => TelaLogin()),
-                );
+                Navigator.pop(context); // Fecha o diálogo
+                Navigator.pop(context); // Fecha o perfil e volta para o login
               },
               child: Text("Sim"),
             ),
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // Fecha o diálogo
+                Navigator.pop(context);
               },
               child: Text("Não"),
             ),
@@ -129,38 +107,20 @@ class _UserProfileState extends State<UserProfile> {
       },
     );
   }
-@override
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Container(
-          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-          decoration: BoxDecoration(
-            color: Colors.blue, // Caixa azul
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Text(
-            "Perfil do Usuário",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-          ),
-        ),
+        title: Text("Perfil do Usuário"),
         actions: [
           IconButton(
             icon: Icon(Icons.edit),
             onPressed: _editProfile,
           ),
           IconButton(
-            icon: Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => SettingsPage()),
-              );
-            },
-          ),
-          IconButton(
             icon: Icon(Icons.exit_to_app),
-            onPressed: _logout,  // Botão de sair
+            onPressed: _logout,
           ),
         ],
       ),
@@ -173,9 +133,6 @@ class _UserProfileState extends State<UserProfile> {
               child: CircleAvatar(
                 radius: 60,
                 backgroundImage: NetworkImage(_imageUrl),
-                child: _imageUrl == "https://www.w3schools.com/w3images/avatar2.png"
-                    ? Icon(Icons.camera_alt, size: 40, color: Colors.white) 
-                    : null,
               ),
             ),
           ),
@@ -203,7 +160,6 @@ class _UserProfileState extends State<UserProfile> {
             Card(
               margin: EdgeInsets.symmetric(vertical: 8),
               elevation: 4,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               child: Padding(
                 padding: EdgeInsets.all(15),
                 child: Text(post),
@@ -214,7 +170,6 @@ class _UserProfileState extends State<UserProfile> {
             "Amigos",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 10),
           for (var friend in _friends)
             ListTile(
               leading: CircleAvatar(
@@ -229,182 +184,3 @@ class _UserProfileState extends State<UserProfile> {
   }
 }
 
-class EditProfilePage extends StatefulWidget {
-  final String name;
-  final String email;
-  final String bio;
-  final String imageUrl;
-
-  EditProfilePage({
-    required this.name,
-    required this.email,
-    required this.bio,
-    required this.imageUrl,
-  });
-
-  @override
-  _EditProfilePageState createState() => _EditProfilePageState();
-}
-
-class _EditProfilePageState extends State<EditProfilePage> {
-  final _formKey = GlobalKey<FormState>();
-  late String _name;
-  late String _email;
-  late String _bio;
-  late String _imageUrl;
-
-  @override
-  void initState() {
-    super.initState();
-    _name = widget.name;
-    _email = widget.email;
-    _bio = widget.bio;
-    _imageUrl = widget.imageUrl;
-  }
-
-  void _saveProfile() {
-    if (_formKey.currentState!.validate()) {
-      _formKey.currentState!.save();
-      Navigator.pop(context, {
-        "name": _name,
-        "email": _email,
-        "bio": _bio,
-        "imageUrl": _imageUrl,
-      });
-    }
-  }
-@override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Editar Perfil"),
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(20),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text("Foto de Perfil"),
-              TextFormField(
-                initialValue: _imageUrl,
-                decoration: InputDecoration(hintText: "URL da imagem de perfil"),
-                onSaved: (value) => _imageUrl = value!,
-                validator: (value) {
-                  if (value == null  value.isEmpty) {
-                    return 'Por favor, insira a URL da foto';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 15),
-              Text("Nome"),
-              TextFormField(
-                initialValue: _name,
-                decoration: InputDecoration(hintText: "Digite seu nome"),
-                onSaved: (value) => _name = value!,
-                validator: (value) {
-                  if (value == null  value.isEmpty) {
-                    return 'Por favor, insira seu nome';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 15),
-              Text("Email"),
-              TextFormField(
-                initialValue: _email,
-                decoration: InputDecoration(hintText: "Digite seu email"),
-                onSaved: (value) => _email = value!,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Por favor, insira seu email';
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 15),
-              Text("Bio"),
-              TextFormField(
-                initialValue: _bio,
-                decoration: InputDecoration(hintText: "Escreva algo sobre você"),
-                onSaved: (value) => _bio = value!,
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _saveProfile,
-                child: Text("Salvar"),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class TelaLogin extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Login")),
-      body: Center(child: Text("Tela de Login (simulada)")),
-    );
-  }
-}
-
-class SettingsPage extends StatefulWidget {
-  @override
-  _SettingsPageState createState() => _SettingsPageState();
-}
-
-class _SettingsPageState extends State<SettingsPage> {
-  bool _isDarkMode = false;  // Exemplo: Controle do modo escuro
-  bool _notificationsEnabled = true;  // Controle de notificações
-
-  // Função para salvar as configurações
-  void _saveSettings() {
-    // FUTURO:
-    // salvar as configurações localmente ou em algum banco de dados
-    Navigator.pop(context); // Volta para a tela anterior
-  }
-@override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Configurações")),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            // Alternar entre modo escuro e claro
-            SwitchListTile(
-              title: Text("Modo Escuro"),
-              value: _isDarkMode,
-              onChanged: (bool value) {
-                setState(() {
-                  _isDarkMode = value;
-                });
-              },
-            ),
-            // Alternar notificações
-            SwitchListTile(
-              title: Text("Notificações"),
-              value: _notificationsEnabled,
-              onChanged: (bool value) {
-                setState(() {
-                  _notificationsEnabled = value;
-                });
-              },
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _saveSettings,
-              child: Text("Salvar Configurações"),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
