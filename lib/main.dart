@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'Telas/tela_login.dart';
 import 'Telas/tela_admin.dart';
-import 'Telas/TelaPublicacoes.dart';
+import 'Telas/tela_publicacoes.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
