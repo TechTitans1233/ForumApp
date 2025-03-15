@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-<<<<<<< HEAD;
 import 'tela_login.dart';
 import 'tela_admin.dart'; // Importando a tela administrativa
 
@@ -23,12 +22,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-=======
-import 'Telas/Tela_Login.dart'; 
-import 'Telas/Tela_admin.dart'; 
-
-
->>>>>>> 8b724d3f622ede791fd4af7f8548b4bfa2ec96dc
 class UserProfile extends StatefulWidget {
   @override
   _UserProfileState createState() => _UserProfileState();
@@ -44,12 +37,9 @@ class _UserProfileState extends State<UserProfile> {
     "Como melhorar o desempenho em apps móveis."
   ];
   List<String> _friends = ["Maria Oliveira", "Carlos Mendes", "Fernanda Souza"];
-<<<<<<< HEAD
+
   String _imageUrl =
       "https://www.w3schools.com/w3images/avatar2.png"; // Imagem fictícia
-=======
-  String _imageUrl = "https://www.w3schools.com/w3images/avatar2.png";
->>>>>>> 8b724d3f622ede791fd4af7f8548b4bfa2ec96dc
 
   // Função para editar o perfil
   void _editProfile() {
@@ -144,7 +134,6 @@ class _UserProfileState extends State<UserProfile> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-<<<<<<< HEAD
         title: Container(
           padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
           decoration: BoxDecoration(
@@ -157,9 +146,6 @@ class _UserProfileState extends State<UserProfile> {
                 fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
           ),
         ),
-=======
-        title: Text("Perfil do Usuário"),
->>>>>>> 8b724d3f622ede791fd4af7f8548b4bfa2ec96dc
         actions: [
           IconButton(
             icon: Icon(Icons.edit),
@@ -167,11 +153,8 @@ class _UserProfileState extends State<UserProfile> {
           ),
           IconButton(
             icon: Icon(Icons.exit_to_app),
-<<<<<<< HEAD
+
             onPressed: _logout, // Botão de sair
-=======
-            onPressed: _logout,
->>>>>>> 8b724d3f622ede791fd4af7f8548b4bfa2ec96dc
           ),
         ],
       ),
@@ -184,13 +167,10 @@ class _UserProfileState extends State<UserProfile> {
               child: CircleAvatar(
                 radius: 60,
                 backgroundImage: NetworkImage(_imageUrl),
-<<<<<<< HEAD
                 child: _imageUrl ==
                         "https://www.w3schools.com/w3images/avatar2.png"
                     ? Icon(Icons.camera_alt, size: 40, color: Colors.white)
                     : null,
-=======
->>>>>>> 8b724d3f622ede791fd4af7f8548b4bfa2ec96dc
               ),
             ),
           ),
@@ -218,11 +198,8 @@ class _UserProfileState extends State<UserProfile> {
             Card(
               margin: EdgeInsets.symmetric(vertical: 8),
               elevation: 4,
-<<<<<<< HEAD
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
-=======
->>>>>>> 8b724d3f622ede791fd4af7f8548b4bfa2ec96dc
               child: Padding(
                 padding: EdgeInsets.all(15),
                 child: Text(post),
@@ -247,7 +224,6 @@ class _UserProfileState extends State<UserProfile> {
   }
 }
 
-<<<<<<< HEAD
 class EditProfilePage extends StatefulWidget {
   final String name;
   final String email;
@@ -431,5 +407,3 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 }
-=======
->>>>>>> 8b724d3f622ede791fd4af7f8548b4bfa2ec96dc

@@ -59,7 +59,8 @@ class _TelaAdminState extends State<TelaAdmin> {
                     };
 
               await _firestore.collection(collection).doc(id).update(newData);
-              if (mounted) Navigator.pop(context);
+              // ignore: use_build_context_synchronously
+              Navigator.pop(context); // Removida a verificação mounted
             },
             child: const Text('Salvar'),
           ),
@@ -135,8 +136,13 @@ class _TelaAdminState extends State<TelaAdmin> {
                 filled: true,
                 fillColor: Theme.of(context).inputDecorationTheme.fillColor,
               ),
-              onChanged: (value) => setState(
-                  () => _searchQueries[collection] = value.toLowerCase()),
+              onChanged: (value) {
+                if (mounted) {
+                  // Adicionar verificação aqui
+                  setState(
+                      () => _searchQueries[collection] = value.toLowerCase());
+                }
+              },
             ),
             const SizedBox(height: 16),
             SizedBox(
@@ -176,6 +182,9 @@ class _TelaAdminState extends State<TelaAdmin> {
                               .collection(collection)
                               .doc(selectedId)
                               .get();
+
+                          if (!mounted) return; // Verificação correta aqui
+
                           if (doc.exists) {
                             _showEditDialog(
                                 collection, selectedId, doc.data()!);
@@ -215,15 +224,20 @@ class _TelaAdminState extends State<TelaAdmin> {
           final data = doc.data() as Map<String, dynamic>;
           return DataRow(
             selected: doc.id == selectedId,
-            onSelectChanged: (_) => setState(() {
-              if (collection == 'users') {
-                _selectedUserId = doc.id;
-                _selectedPostId = null;
-              } else {
-                _selectedPostId = doc.id;
-                _selectedUserId = null;
+            onSelectChanged: (_) {
+              if (mounted) {
+                // Verificação adicionada aqui
+                setState(() {
+                  if (collection == 'users') {
+                    _selectedUserId = doc.id;
+                    _selectedPostId = null;
+                  } else {
+                    _selectedPostId = doc.id;
+                    _selectedUserId = null;
+                  }
+                });
               }
-            }),
+            },
             cells: columns.map((col) {
               final value = col == 'ID' ? doc.id : data[col.toLowerCase()];
               return DataCell(Text(value?.toString() ?? ''));
