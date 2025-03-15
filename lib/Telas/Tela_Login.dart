@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'Tela_admin.dart';
+import 'tela_admin.dart';
 
 class TelaLogin extends StatefulWidget {
   const TelaLogin({super.key});
@@ -27,7 +27,9 @@ class _TelaLoginState extends State<TelaLogin> {
   Future<void> _handleUserLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isLoading = true);
+    if (mounted) {
+      setState(() => _isLoading = true);
+    }
 
     try {
       final userCredential = await _auth.signInWithEmailAndPassword(
@@ -40,6 +42,8 @@ class _TelaLoginState extends State<TelaLogin> {
           .doc(userCredential.user!.uid)
           .get();
 
+      if (!mounted) return;
+
       if (userDoc.exists && userDoc.data()!['isAdmin'] == true) {
         Navigator.pushReplacement(
             context, MaterialPageRoute(builder: (_) => const TelaAdmin()));
@@ -47,16 +51,22 @@ class _TelaLoginState extends State<TelaLogin> {
         Navigator.pushReplacementNamed(context, '/forum');
       }
     } on FirebaseAuthException catch (e) {
-      setState(() => _errorMessage = _getErrorMessage(e.code));
+      if (mounted) {
+        setState(() => _errorMessage = _getErrorMessage(e.code));
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   Future<void> _handleAdminLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isLoading = true);
+    if (mounted) {
+      setState(() => _isLoading = true);
+    }
 
     try {
       final query = await _firestore
@@ -75,19 +85,27 @@ class _TelaLoginState extends State<TelaLogin> {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
+      if (!mounted) return;
+
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (_) => const TelaAdmin()));
     } on FirebaseAuthException catch (e) {
-      setState(() => _errorMessage = _getErrorMessage(e.code));
+      if (mounted) {
+        setState(() => _errorMessage = _getErrorMessage(e.code));
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
   Future<void> _handleRegistration() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isLoading = true);
+    if (mounted) {
+      setState(() => _isLoading = true);
+    }
 
     try {
       final userCredential = await _auth.createUserWithEmailAndPassword(
@@ -102,11 +120,17 @@ class _TelaLoginState extends State<TelaLogin> {
         'createdAt': FieldValue.serverTimestamp(),
       });
 
+      if (!mounted) return;
+
       Navigator.pushReplacementNamed(context, '/forum');
     } on FirebaseAuthException catch (e) {
-      setState(() => _errorMessage = _getErrorMessage(e.code));
+      if (mounted) {
+        setState(() => _errorMessage = _getErrorMessage(e.code));
+      }
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 

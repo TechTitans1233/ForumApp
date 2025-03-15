@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'Telas/Tela_Login.dart';
-import 'Telas/Tela_admin.dart'; // Importando a tela administrativa
-
+import 'tela_login.dart';
+import 'tela_admin.dart'; // Importando a tela administrativa
 
 void main() {
   runApp(MyApp());
@@ -18,7 +17,7 @@ class MyApp extends StatelessWidget {
           bodyLarge: TextStyle(color: Colors.black),
         ),
       ),
-      home: UserProfile(),  // Página inicial agora é o perfil do usuário
+      home: UserProfile(), // Página inicial agora é o perfil do usuário
     );
   }
 }
@@ -38,7 +37,8 @@ class _UserProfileState extends State<UserProfile> {
     "Como melhorar o desempenho em apps móveis."
   ];
   List<String> _friends = ["Maria Oliveira", "Carlos Mendes", "Fernanda Souza"];
-  String _imageUrl = "https://www.w3schools.com/w3images/avatar2.png"; // Imagem fictícia
+  String _imageUrl =
+      "https://www.w3schools.com/w3images/avatar2.png"; // Imagem fictícia
 
   // Função para editar o perfil
   void _editProfile() {
@@ -69,7 +69,8 @@ class _UserProfileState extends State<UserProfile> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        TextEditingController _urlController = TextEditingController(text: _imageUrl);
+        TextEditingController _urlController =
+            TextEditingController(text: _imageUrl);
 
         return AlertDialog(
           title: Text("Alterar Foto de Perfil"),
@@ -129,7 +130,8 @@ class _UserProfileState extends State<UserProfile> {
       },
     );
   }
-@override
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -141,7 +143,8 @@ class _UserProfileState extends State<UserProfile> {
           ),
           child: Text(
             "Perfil do Usuário",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+            style: TextStyle(
+                fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
           ),
         ),
         actions: [
@@ -160,7 +163,7 @@ class _UserProfileState extends State<UserProfile> {
           ),
           IconButton(
             icon: Icon(Icons.exit_to_app),
-            onPressed: _logout,  // Botão de sair
+            onPressed: _logout, // Botão de sair
           ),
         ],
       ),
@@ -173,8 +176,9 @@ class _UserProfileState extends State<UserProfile> {
               child: CircleAvatar(
                 radius: 60,
                 backgroundImage: NetworkImage(_imageUrl),
-                child: _imageUrl == "https://www.w3schools.com/w3images/avatar2.png"
-                    ? Icon(Icons.camera_alt, size: 40, color: Colors.white) 
+                child: _imageUrl ==
+                        "https://www.w3schools.com/w3images/avatar2.png"
+                    ? Icon(Icons.camera_alt, size: 40, color: Colors.white)
                     : null,
               ),
             ),
@@ -203,7 +207,8 @@ class _UserProfileState extends State<UserProfile> {
             Card(
               margin: EdgeInsets.symmetric(vertical: 8),
               elevation: 4,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
               child: Padding(
                 padding: EdgeInsets.all(15),
                 child: Text(post),
@@ -273,7 +278,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
       });
     }
   }
-@override
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -289,10 +295,11 @@ class _EditProfilePageState extends State<EditProfilePage> {
               Text("Foto de Perfil"),
               TextFormField(
                 initialValue: _imageUrl,
-                decoration: InputDecoration(hintText: "URL da imagem de perfil"),
+                decoration:
+                    InputDecoration(hintText: "URL da imagem de perfil"),
                 onSaved: (value) => _imageUrl = value!,
                 validator: (value) {
-                  if (value == null  value.isEmpty) {
+                  if (value == null || value.isEmpty) {
                     return 'Por favor, insira a URL da foto';
                   }
                   return null;
@@ -305,7 +312,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 decoration: InputDecoration(hintText: "Digite seu nome"),
                 onSaved: (value) => _name = value!,
                 validator: (value) {
-                  if (value == null  value.isEmpty) {
+                  if (value == null || value.isEmpty) {
                     return 'Por favor, insira seu nome';
                   }
                   return null;
@@ -328,7 +335,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
               Text("Bio"),
               TextFormField(
                 initialValue: _bio,
-                decoration: InputDecoration(hintText: "Escreva algo sobre você"),
+                decoration:
+                    InputDecoration(hintText: "Escreva algo sobre você"),
                 onSaved: (value) => _bio = value!,
               ),
               SizedBox(height: 20),
@@ -360,8 +368,8 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  bool _isDarkMode = false;  // Exemplo: Controle do modo escuro
-  bool _notificationsEnabled = true;  // Controle de notificações
+  bool _isDarkMode = false; // Exemplo: Controle do modo escuro
+  bool _notificationsEnabled = true; // Controle de notificações
 
   // Função para salvar as configurações
   void _saveSettings() {
@@ -369,7 +377,8 @@ class _SettingsPageState extends State<SettingsPage> {
     // salvar as configurações localmente ou em algum banco de dados
     Navigator.pop(context); // Volta para a tela anterior
   }
-@override
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Configurações")),
