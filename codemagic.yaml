@@ -1,0 +1,22 @@
+workflows:
+  android-debug-workflow:
+    name: Android Debug Workflow
+    max_build_duration: 60
+    environment:
+      vars:
+        GRADLE_TASK: "assembleDebug"
+    scripts:
+      - name: Clean project
+        script: |
+          echo "Cleaning project..."
+          ./gradlew clean
+      - name: Build debug APK
+        script: |
+          echo "Building debug APK..."
+          ./gradlew $GRADLE_TASK
+    artifacts:
+      - build/app/outputs/**/*.apk
+    publishing:
+      email:
+        recipients:
+          - youremail@example.com
