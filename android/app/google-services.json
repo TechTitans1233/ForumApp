@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:112085181246:android:f5d52dd4dfe90645f0826f",
+        "android_client_info": {
+          "package_name": "PI3.ufrpe.forumwebapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAhoVVkKQHKx9e_67DIDGLgxyBpFsHDJ8o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:112085181246:android:7802d0414414473bf0826f",
         "android_client_info": {
           "package_name": "com.name.forum"
