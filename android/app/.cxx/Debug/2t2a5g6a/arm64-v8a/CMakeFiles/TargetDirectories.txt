@@ -1,0 +1,2 @@
+C:/Users/caius julius cesar/Music/ForumApp/android/app/.cxx/Debug/2t2a5g6a/arm64-v8a/CMakeFiles/edit_cache.dir
+C:/Users/caius julius cesar/Music/ForumApp/android/app/.cxx/Debug/2t2a5g6a/arm64-v8a/CMakeFiles/rebuild_cache.dir
