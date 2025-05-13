@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'Telas/tela_login.dart';
 import 'Telas/tela_admin.dart';
 import 'Telas/tela_publicacoes.dart';
+import 'Telas/tela_profile.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,6 +31,7 @@ class MyApp extends StatelessWidget {
         '/': (context) => const TelaLogin(),
         '/forum': (context) => const TelaPublicacoes(),
         '/admin': (context) => const TelaAdmin(),
+        '/profile': (context) => const UserProfile()
       },
     );
   }

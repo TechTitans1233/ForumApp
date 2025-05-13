@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 void main() {
   runApp(const MyApp());
@@ -112,9 +113,12 @@ class _UserProfileState extends State<UserProfile> {
           content: const Text("Você tem certeza que deseja sair?"),
           actions: [
             TextButton(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.pop(context);
-                Navigator.pop(context);
+
+                await FirebaseAuth.instance.signOut();
+
+                Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
               },
               child: const Text("Sim"),
             ),
@@ -348,18 +352,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class TelaLogin extends StatelessWidget {
-  const TelaLogin({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Login")),
-      body: const Center(child: Text("Tela de Login (simulada)")),
     );
   }
 }

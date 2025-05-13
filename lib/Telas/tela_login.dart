@@ -118,6 +118,7 @@ class _TelaLoginState extends State<TelaLogin> {
         'email': _emailController.text.trim(),
         'isAdmin': false,
         'createdAt': FieldValue.serverTimestamp(),
+        'uid': userCredential.user!.uid,
       });
 
       if (!mounted) return;
