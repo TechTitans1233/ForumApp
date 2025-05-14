@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:forumwebapp/Services/firebase_notification_service.dart';
+import 'package:forumwebapp/Services/notification_service.dart';
+import 'package:provider/provider.dart';
 
 class TelaPublicacoes extends StatefulWidget {
   const TelaPublicacoes({super.key});
@@ -14,6 +17,34 @@ class _TelaPublicacoesState extends State<TelaPublicacoes> {
   final _conteudoController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    initilizeFirebaseMessaging();
+    checkNotifications();
+  }
+
+  initilizeFirebaseMessaging() async {
+    await Provider.of<FirebaseMessagingService>(context, listen: false).initialize();
+  }
+
+  checkNotifications() async {
+    await Provider.of<NotificationService>(context, listen: false).checkForNotifications();
+  }
+
+  showNotification() {
+    setState(() {
+      Provider.of<NotificationService>(context, listen: false).showLocalNotification(
+        CustomNotification(
+          id: 1,
+          title: '+1',
+          body: 'Adicionado',
+          payload: '/forum',
+        ),
+      );
+    });
+  }
 
   // Adicionar publicação ao Firestore
   Future<void> _adicionarPublicacao() async {
@@ -29,6 +60,8 @@ class _TelaPublicacoesState extends State<TelaPublicacoes> {
 
     _tituloController.clear();
     _conteudoController.clear();
+
+    showNotification();
   }
 
   // Buscar publicações do usuário logado
