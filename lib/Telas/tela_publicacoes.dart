@@ -77,6 +77,11 @@ class _TelaPublicacoesState extends State<TelaPublicacoes> {
         .snapshots();
   }
 
+  Future<void> _removerPublicacao(String publicacaoId) async {
+    await _firestore.collection('publicacoes').doc(publicacaoId).delete();
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -136,8 +141,35 @@ class _TelaPublicacoesState extends State<TelaPublicacoes> {
                       child: ListTile(
                         title: Text(publicacao['titulo']),
                         subtitle: Text(publicacao['conteudo']),
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          onPressed: () async {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Confirmar exclusão'),
+                                content: const Text('Tem certeza que deseja excluir esta publicação?'),
+                                actions: [
+                                  TextButton(
+                                    child: const Text('Cancelar'),
+                                    onPressed: () => Navigator.of(context).pop(false),
+                                  ),
+                                  TextButton(
+                                    child: const Text('Excluir'),
+                                    onPressed: () => Navigator.of(context).pop(true),
+                                  ),
+                                ],
+                              ),
+                            );
+
+                            if (confirm == true) {
+                              await _removerPublicacao(publicacao.id);
+                            }
+                          },
+                        ),
                       ),
                     );
+
                   },
                 );
               },
