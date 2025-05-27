@@ -162,8 +162,30 @@ class _TelaPublicacoesState extends State<TelaPublicacoes> {
                               ),
                             );
 
+                            //snackbar
                             if (confirm == true) {
-                              await _removerPublicacao(publicacao.id);
+                              // Backup dos dados antes de deletar
+                              //final dadosPublicacao = publicacao.data();
+                              final Map<String, dynamic>? dadosPublicacao = publicacao.data() as Map<String, dynamic>?;
+                              final docId = publicacao.id;
+
+                              await _removerPublicacao(docId);
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: const Text('Publicação removida com sucesso.'),
+                                  duration: const Duration(seconds: 5),
+                                  action: SnackBarAction(
+                                    label: 'Desfazer',
+                                    onPressed: () async {
+                                      await _firestore.collection('publicacoes').add({
+                                        ...?dadosPublicacao,
+                                        'dataPublicacao': FieldValue.serverTimestamp(), // nova data
+                                      });
+                                    },
+                                  ),
+                                ),
+                              );
                             }
                           },
                         ),
