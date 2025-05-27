@@ -81,6 +81,56 @@ class _TelaPublicacoesState extends State<TelaPublicacoes> {
     await _firestore.collection('publicacoes').doc(publicacaoId).delete();
   }
 
+  Future<void> _editarPublicacao(String id, String tituloAtual, String conteudoAtual) async {
+    final tituloController = TextEditingController(text: tituloAtual);
+    final conteudoController = TextEditingController(text: conteudoAtual);
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Editar Publicação'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: tituloController,
+                decoration: const InputDecoration(labelText: 'Título'),
+              ),
+              TextField(
+                controller: conteudoController,
+                decoration: const InputDecoration(labelText: 'Conteúdo'),
+                maxLines: 5,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Salvar'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirm == true) {
+      await _firestore.collection('publicacoes').doc(id).update({
+        'titulo': tituloController.text.trim(),
+        'conteudo': conteudoController.text.trim(),
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Publicação atualizada com sucesso.')),
+      );
+    }
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -141,57 +191,69 @@ class _TelaPublicacoesState extends State<TelaPublicacoes> {
                       child: ListTile(
                         title: Text(publicacao['titulo']),
                         subtitle: Text(publicacao['conteudo']),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: () async {
-                            final confirm = await showDialog<bool>(
-                              context: context,
-                              builder: (context) => AlertDialog(
-                                title: const Text('Confirmar exclusão'),
-                                content: const Text('Tem certeza que deseja excluir esta publicação?'),
-                                actions: [
-                                  TextButton(
-                                    child: const Text('Cancelar'),
-                                    onPressed: () => Navigator.of(context).pop(false),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.edit, color: Colors.blue),
+                              onPressed: () {
+                                _editarPublicacao(
+                                  publicacao.id,
+                                  publicacao['titulo'],
+                                  publicacao['conteudo'],
+                                );
+                              },
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () async {
+                                final confirm = await showDialog<bool>(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text('Confirmar exclusão'),
+                                    content: const Text('Tem certeza que deseja excluir esta publicação?'),
+                                    actions: [
+                                      TextButton(
+                                        child: const Text('Cancelar'),
+                                        onPressed: () => Navigator.of(context).pop(false),
+                                      ),
+                                      TextButton(
+                                        child: const Text('Excluir'),
+                                        onPressed: () => Navigator.of(context).pop(true),
+                                      ),
+                                    ],
                                   ),
-                                  TextButton(
-                                    child: const Text('Excluir'),
-                                    onPressed: () => Navigator.of(context).pop(true),
-                                  ),
-                                ],
-                              ),
-                            );
+                                );
 
-                            //snackbar
-                            if (confirm == true) {
-                              // Backup dos dados antes de deletar
-                              //final dadosPublicacao = publicacao.data();
-                              final Map<String, dynamic>? dadosPublicacao = publicacao.data() as Map<String, dynamic>?;
-                              final docId = publicacao.id;
+                                if (confirm == true) {
+                                  final Map<String, dynamic>? dadosPublicacao =
+                                  publicacao.data() as Map<String, dynamic>?;
 
-                              await _removerPublicacao(docId);
-
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: const Text('Publicação removida com sucesso.'),
-                                  duration: const Duration(seconds: 5),
-                                  action: SnackBarAction(
-                                    label: 'Desfazer',
-                                    onPressed: () async {
-                                      await _firestore.collection('publicacoes').add({
-                                        ...?dadosPublicacao,
-                                        'dataPublicacao': FieldValue.serverTimestamp(), // nova data
-                                      });
-                                    },
-                                  ),
-                                ),
-                              );
-                            }
-                          },
+                                  if (dadosPublicacao != null) {
+                                    await _removerPublicacao(publicacao.id);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: const Text('Publicação removida.'),
+                                        duration: const Duration(seconds: 5),
+                                        action: SnackBarAction(
+                                          label: 'Desfazer',
+                                          onPressed: () async {
+                                            await _firestore.collection('publicacoes').add({
+                                              ...dadosPublicacao,
+                                              'dataPublicacao': FieldValue.serverTimestamp(),
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                            ),
+                          ],
                         ),
                       ),
                     );
-
                   },
                 );
               },
