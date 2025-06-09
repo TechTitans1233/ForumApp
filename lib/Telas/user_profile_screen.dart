@@ -50,6 +50,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
   }
 
+  void _test() async {
+    Navigator.pushReplacementNamed(context, '/gps');
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_loading) return const Center(child: CircularProgressIndicator());
@@ -61,6 +65,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         actions: [
           IconButton(icon: const Icon(Icons.edit), onPressed: _editProfile),
           IconButton(icon: const Icon(Icons.logout), onPressed: _logout),
+          IconButton(onPressed: _test, icon: const Icon(Icons.gps_fixed_rounded)),
         ],
       ),
       body: ListView(

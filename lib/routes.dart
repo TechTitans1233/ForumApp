@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:forumwebapp/Telas/gps.dart';
 import 'Telas/tela_login.dart';
 import 'Telas/tela_admin.dart';
 import 'Telas/tela_publicacoes.dart';
@@ -11,6 +12,7 @@ class Routes {
     '/forum': (_) => const TelaPublicacoes(),
     '/admin': (_) => const TelaAdmin(),
     '/profile': (_) => const UserProfileScreen(),
+    '/gps': (_) => const MyHomePage(title: 'gps'),
   };
 
   static String initial = '/';
